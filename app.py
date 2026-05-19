@@ -1,6 +1,7 @@
 import streamlit as st
 import networkx as nx
 import pandas as pd
+import matplotlib.pyplot as plt 
 
 st.set_page_config(
     page_title="Stratum Lite",
@@ -135,7 +136,58 @@ for asset, info in assets.items():
     G.add_node(asset, **info)
 
 G.add_edges_from(dependencies)
+def draw_dependency_network(graph, disrupted_asset, affected_assets):
+    fig, ax = plt.subplots(figsize=(12, 7))
 
+    pos = nx.spring_layout(graph, seed=42, k=0.8)
+
+    node_colours = []
+    for node in graph.nodes():
+        if node == disrupted_asset:
+            node_colours.append("#ff4b4b")
+        elif node in affected_assets:
+            node_colours.append("#ffa500")
+        else:
+            node_colours.append("#7fb3d5")
+
+    nx.draw_networkx_nodes(
+        graph,
+        pos,
+        node_color=node_colours,
+        node_size=1800,
+        edgecolors="black",
+        linewidths=1,
+        ax=ax
+    )
+
+    nx.draw_networkx_edges(
+        graph,
+        pos,
+        arrows=True,
+        arrowstyle="-|>",
+        arrowsize=18,
+        width=1.5,
+        alpha=0.7,
+        ax=ax
+    )
+
+    nx.draw_networkx_labels(
+        graph,
+        pos,
+        font_size=8,
+        font_weight="bold",
+        ax=ax
+    )
+
+    ax.set_title(
+        "Infrastructure Dependency Network",
+        fontsize=16,
+        fontweight="bold"
+    )
+
+    ax.axis("off")
+
+    return fig
 # ----------------------------
 # Sidebar controls
 # ----------------------------
@@ -259,12 +311,24 @@ with tab1:
 
     st.subheader("Dependency Links")
 
+
     dependency_table = pd.DataFrame(
         dependencies,
         columns=["Source Asset", "Dependent Asset"]
     )
 
     st.dataframe(dependency_table, use_container_width=True)
+
+    st.subheader("Visual Dependency Network")
+
+    st.write(
+        "The network below shows how assests depend on each other."
+        "The disrupted assetis highlighted in red. Downstream affected systems are highlighted in orange."
+    )
+
+    network_fig = draw_dependency_network(G, disrupted_asset, affected)
+
+    st.pyplot(network_fig)
 
 with tab2:
     st.header("Simulation Results")
