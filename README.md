@@ -1,4 +1,5 @@
-#Stratum Lite
+Stratum Lite
+
 A prototype for exploring infrastructure dependencies and potential cascading disruption.
 
 Stratum Lite is an independent Python project that models a fictional port environment as a directed graph. It allows users to select an infrastructure asset and explore which connected systems could be affected if that asset were disrupted.
